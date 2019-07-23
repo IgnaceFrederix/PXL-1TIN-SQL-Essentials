@@ -1,0 +1,5 @@
+SELECT job
+FROM emp
+WHERE ROWNUM <= 1
+GROUP BY job
+ORDER BY AVG(sal) DESC

@@ -1,0 +1,74 @@
+Vraag 1
+Schrijf een query die de gemeenten toont die beginnen met de letter h en waar geflitst werd in 2006. Toon zowel de gemeente als de datum van het flitsen.
+SELECT g.gemeente, f.wanneer "wanneer geflitst"
+FROM GEMEENTE g 
+JOIN FLITSEN f
+ON (g.postcode = f.waar)
+WHERE UPPER(g.gemeente) LIKE 'H%';
+
+Vraag 2
+Geef de code weer die bij uitvoering de nodige gegevens aan de gebruiker vraagt zodat gegevens kunnen worden toegevoegd aan de tabel personeel. Het emailadres wordt automatisch gegenereerd.
+CREATE SEQUENCE pers_id_sequence;
+
+INSERT INTO PERSONEEL
+VALUES (pers_id_sequence.NEXTVAL, initcap('&&naam'), initcap('&&voornaam'), initcap('&&straat'),
+ &&huisnummer, &&postcode, SUBSTR('&&telnr',0,3)|| '/' || SUBSTR('&&telnr',3), SUBSTR('&&gsmnr',0,4) || '/' || SUBSTR('&&gsmnr',4),
+ LOWER('&voornaam') || '.' || LOWER('&naam') || '@politie.be' , &&kenteken, &&functie_id, &&departement_id, &&salary, sysdate);
+
+Vraag 3
+Creeer een interactieve query die de namen (voornaam gekoppeld aan familienaam) weergeeft van de mensen die minstens x maanden langer in dienst zijn dan de hoofdcommissaris. Hierbij is x het aantal maanden die de gebruiker ingeeft.
+toon ook de datum van deze personen op volgende wijze: Wednesday 9 January 1999.
+SELECT voornaam||' '||naam naam, TO_CHAR(indienst,'Day DD Month YYYY')
+FROM personeel
+WHERE indienst > ADD_MONTHS((SELECT indienst FROM personeel WHERE functie_id = 6),&aantal_maanden);
+
+Vraag 4
+schrijf een query die per overtreding weergeeft voor hoeveel geld er in totaal al werd geind? de output moet enkel getoond worden indien het totaal van de boetes meer dan 120 euro is.
+CREATE VIEW overtreding
+AS SELECT id, naam "Overtreding", sum(geldboete) "Totaal per boete"
+FROM overtredingen
+GROUP BY id, naam
+HAVING sum(geldboete) > 120
+ORDER BY sum(geldboete);
+
+Vraag 5
+Boek: id uniek 4 cijfers stap van 10 automatissch gegenereed primaire sleutel
+voornaam, achternaam auteur, exeplaren
+Boek personeel: boek_id
+personeelsnr
+beide fk
+
+CREATE SEQUENCE boek_id_sequence
+INCREMENT BY 10;
+
+CREATE TABLE boek(
+	id	number(4) CONSTRAINT boek_id_pk PRIMARY KEY,
+	voornaam_auteur varchar2(20),
+	achternaam_auteur varchar2(25),
+	aantalExemplaren number (1) CONSTRAINT boek_aantalExemplaren_ck CHECK(aantalExemplaren<=5)
+);
+
+CREATE TABLE boek_personeel(
+	Boek_id number(4),
+	personeelsnummer number(4),
+	CONSTRAINT boek_personeel_boek_fk FOREIGN kEY (boek_id) REFERENCES boek(id),
+	CONSTRAINT boek_personeel_pers_fk FOREIGN kEY (personeelsnummer) REFERENCES personeel(id)
+);
+
+Vraag 6
+view personeelsnr, familienaam, departementnaam, functie, kenteken, type
+Create view personeelsleden (personeelsnummer, familienaam, departementnaam, functie, kenteken, type_auto)
+AS SELECT p.id, p.naam, d.naam, g.functie, p.kenteken, a.type
+   FROM personeel p JOIN departement d
+   ON p.deptnr = d.id
+   JOIN graad g
+   on p.functie_id = g.id
+JOIN auto a
+on p.kenteken = a.kenteken
+order by a.type NULLS last;
+
+14
+26
+9
+13
+		
